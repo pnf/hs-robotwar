@@ -56,4 +56,7 @@
 (deftest lex-multi-line
   (testing "lexing multiple lines"
     (is (= (lex (clojure.string/join "\n" [line1 line2 line3]))
-           (concat tokens1 tokens2 tokens3)))))
+           (concat
+             (conj tokens1 {:token "EOL", :pos 23})
+             (conj tokens2 {:token "EOL", :pos 13})
+             (conj tokens3 {:token "EOL", :pos 17}))))))

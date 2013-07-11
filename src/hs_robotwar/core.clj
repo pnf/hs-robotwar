@@ -55,7 +55,8 @@
 
 (defn lex
   [src-code]
-  (mapcat lex-line (clojure.string/split src-code #"\n")))
+  (mapcat #(conj-with-metadata (lex-line %) "EOL" (count %))
+          (clojure.string/split src-code #"\n")))
 
 (def parse
   "will be filled in later -- right now just a pass-through for the repl"
