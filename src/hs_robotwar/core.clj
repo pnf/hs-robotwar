@@ -12,16 +12,14 @@
 (def commands (union operators 
                      #{"TO" "IF" "GOTO" "GOSUB" "ENDSUB"}))
 
+; (largely stolen from re-seq source)
 (defn re-seq-with-pos
-  "like re-seq, but returns a sequence of 2-element sequences
-  in the form [match pos], where pos is the index of match in s"
-  [re s]
-  (let [matches (re-seq re s)
-        indexes (reduce (fn [idxs match]
-                          (conj idxs (.indexOf s match (inc (or (last idxs) -1)))))
-                        []
-                        matches)]
-    (map list matches indexes)))
+  "Returns a lazy sequence of successive matches of pattern in string with position"
+  [^java.util.regex.Pattern re s]
+  (let [m (re-matcher re s)]
+    ((fn step []
+       (when (.find m)
+         (cons [(re-groups m) (.start m)] (lazy-seq (step))))))))
 
 (defn build-lex-metadata 
   [s n] 
