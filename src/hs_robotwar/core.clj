@@ -22,7 +22,9 @@
          (cons [(re-groups m) (.start m)] (lazy-seq (step))))))))
 
 (def lex-re (let [opstring (join operators)]
-              (re-pattern (str "[" opstring "]|[^" opstring "\\s]+"))))
+              (re-pattern (str "(?<=[" opstring "]\\s{0,10})-\\s*\\d+"
+                               "|[" opstring "]"
+                               "|[^" opstring "\\s]+"))))
 
 (defn strip-comments
   [line]
@@ -46,9 +48,11 @@
 
 (defn str->int
   "Like Integer/parseInt, but returns nil on failure"
-  [s]
-  (and (re-matches #"-?\d+" s)
-       (Integer/parseInt s)))
+  [sraw]
+  (let [s (.replaceAll sraw "\\s+" "")]
+    (and (re-matches #"-?\d+" s)
+         (try (Integer/parseInt s)
+              (catch Exception e nil)))))
 
 (defn valid-word
    "Capital letters and numbers, starting with a capital letter"
@@ -75,15 +79,12 @@
 (defn parse
   "take the tokens and convert them to structured source code ready for compiling"
   [initial-tokens]
-  (loop [parsed []
-         [{token-str :token-str :as token} & tail :as tokens] initial-tokens]
-    (let [previous-parsed-token (last parsed)]
+  (loop [parsed                    []
+         [token & tail :as tokens] initial-tokens]
+    (let [{token-str :token-str} token
+          previous-parsed-token  (last parsed)]  ; nb. peek would be faster
       (cond
-        (or (empty? tokens) (= (:type previous-parsed-token) :error))
-          parsed
-        ; deal with unary negative signs
-        (and (= token-str "-") (not-empty tail) (not (value-type? (:type previous-parsed-token)))) 
-          (recur parsed (cons (merge-lexed-tokens token (first tail)) (rest tail)))
+        (or (empty? tokens) (= (:type previous-parsed-token) :error))     parsed
         :otherwise
           (recur (conj parsed (parse-token token)) tail)))))
 

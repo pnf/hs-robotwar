@@ -24,8 +24,8 @@
 (def lexed-tokens3 [{:token-str "IF", :pos 0} 
                     {:token-str "X", :pos 3} 
                     {:token-str "<", :pos 4} 
-                    {:token-str "-", :pos 5} 
-                    {:token-str "5", :pos 6} 
+                    {:token-str "-5", :pos 5} 
+                    ;{:token-str "5", :pos 6} 
                     {:token-str "GOTO", :pos 8} 
                     {:token-str "SCAN", :pos 13}])
 
