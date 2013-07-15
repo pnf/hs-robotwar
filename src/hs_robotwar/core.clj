@@ -22,9 +22,9 @@
          (cons [(re-groups m) (.start m)] (lazy-seq (step))))))))
 
 (def lex-re (let [opstring (join operators)]
-              (re-pattern (str "(?<=[" opstring "]\\s{0,10})-\\s*\\d+"
-                               "|[" opstring "]"
-                               "|[^" opstring "\\s]+"))))
+              (re-pattern (str "(?<=[" opstring "]\\s{0,10})-\\s*\\d+" ; negative number
+                               "|[" opstring "]"                       ; operator
+                               "|[^" opstring "\\s]+"))))              ; not operator
 
 (defn strip-comments
   [line]
@@ -38,13 +38,6 @@
 (defn lex
   [lines]
   (mapcat lex-line (split lines #"\n")))
-
-(defn merge-lexed-tokens
-  "helper function for conjoining minus signs to next token
-  if they turn out to be unary negative signs"
-  [first-token second-token]
-  {:token-str (str (:token-str first-token) (:token-str second-token))
-   :pos (:pos first-token)})
 
 (defn str->int
   "Like Integer/parseInt, but returns nil on failure"
@@ -77,17 +70,11 @@
 (def value-type? #{:number :register})
 
 (defn parse
-  "take the tokens and convert them to structured source code ready for compiling"
-  [initial-tokens]
-  (loop [parsed                    []
-         [token & tail :as tokens] initial-tokens]
-    (let [{token-str :token-str} token
-          previous-parsed-token  (last parsed)]  ; nb. peek would be faster
-      (cond
-        (or (empty? tokens) (= (:type previous-parsed-token) :error))     parsed
-        :otherwise
-          (recur (conj parsed (parse-token token)) tail)))))
-
+  [tokens]
+  (reduce (fn [parsed token]
+            (if (= (:type (last parsed)) :error) parsed
+                (conj parsed (parse-token token))))
+          [] tokens) )
 
 (defn pretty-print-tokens [token-seq]
   (join 
