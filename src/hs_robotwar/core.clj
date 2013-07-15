@@ -21,10 +21,6 @@
        (when (.find m)
          (cons [(re-groups m) (.start m)] (lazy-seq (step))))))))
 
-(defn build-lex-metadata 
-  [s n] 
-  {:token-str s, :pos n})
-
 (def lex-re (let [opstring (join operators)]
               (re-pattern (str "[" opstring "]|[^" opstring "\\s]+"))))
 
@@ -34,7 +30,7 @@
 
 (defn lex-line
   [line]
-  (map #(apply build-lex-metadata %) 
+  (map (fn [[s n]]  {:token-str s, :pos n})
        (re-seq-with-pos lex-re line)))
 
 (defn lex
