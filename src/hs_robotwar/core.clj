@@ -34,8 +34,8 @@
        (re-seq-with-pos lex-re line)))
 
 (defn lex
-  [src-code]
-  (mapcat lex-line (split src-code #"\n")))
+  [lines]
+  (mapcat lex-line (split lines #"\n")))
 
 (defn merge-lexed-tokens
   "helper function for conjoining minus signs to next token
@@ -55,9 +55,7 @@
   [s]
   (re-matches #"[A-Z]+\d*" s))
 
-(defn ignoring-args-thunk [x] (fn [& _] x))
-
-(def return-err (ignoring-args-thunk "Invalid word or symbol"))
+(def return-err (constantly "Invalid word or symbol"))
 
 (defn parse-token
   "takes a single token and adds the appropriate metadata"
